@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 /**
  * TODO: Connect to MongoDB
@@ -9,4 +9,14 @@ import mongoose from 'mongoose';
  */
 export async function connectDB(uri) {
   // Your code here
+  if (!uri) {
+    throw new Error("MongoDB URI is required");
+  }
+  try {
+    await mongoose.connect(uri);
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
+    throw error;
+  }
+  return mongoose.connection;
 }
