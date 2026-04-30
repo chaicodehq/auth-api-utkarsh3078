@@ -20,14 +20,14 @@ const userSchema = new mongoose.Schema(
     // Your schema fields here
     name: {
       type: String,
-      required: [, "name is required"],
+      required: [true, "name is required"],
       trim: true,
       minLength: [2, "name must be at least 2 characters"],
       maxLength: [50, "name must be at most 50 characters"],
     },
     email: {
       type: String,
-      required: [, "email is required"],
+      required: [true, "email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "password is required"],
-      minLenght: [6, "password must be atleast 6 characters"],
+      minLength: [6, "password must be atleast 6 characters"],
       select: false, // Important: Don't return password by default
     },
     role: {
@@ -47,8 +47,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     // Schema options here
-    createdAt: true,
-    updatedAt: true,
+    timestamps: true,
   },
 );
 
@@ -73,7 +72,9 @@ userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
+userSchema.methods.comparePassword = async function (clearTextPassword) {
+  return bcrypt.compare(clearTextPassword, this.password);
+};
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+const User = mongoose.model("user", userSchema);
+export { User };
