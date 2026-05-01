@@ -15,6 +15,11 @@ export async function register(req, res, next) {
   try {
     // Your code here
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ error: { message: "Name, email and password are required" } });
+    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -22,7 +27,9 @@ export async function register(req, res, next) {
         .json({ error: { message: "Email already exists" } });
     }
     const user = await User.create({ name, email, password });
-    res.status(201).json({ user });
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+    res.status(201).json({ user: userWithoutPassword });
   } catch (error) {
     next(error);
   }
@@ -56,13 +63,15 @@ export async function login(req, res, next) {
         .json({ error: { message: "Invalid credentials" } });
     }
 
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
     const token = signToken({
       userId: user._id,
       email: user.email,
       role: user.role,
     });
 
-    return res.status(200).json({ token, user });
+    return res.status(200).json({ token, user: userWithoutPassword });
   } catch (error) {
     next(error);
   }
